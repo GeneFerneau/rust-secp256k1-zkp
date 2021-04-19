@@ -30,6 +30,9 @@ pub const SECP256K1_START_SIGN: c_uint = (1 << 0) | (1 << 9);
 pub const SECP256K1_SER_UNCOMPRESSED: c_uint = (1 << 1) | 0;
 /// Flag for keys to indicate compressed serialization format
 pub const SECP256K1_SER_COMPRESSED: c_uint = (1 << 1) | (1 << 8);
+/// Number of Fischlin proof rounds
+#[cfg(feature = "ecdsa-adaptor")]
+pub const SECP256K1_FISCHLIN_ROUNDS: size_t = 16;
 
 /// A nonce generation function. Ordinary users of the library
 /// never need to see this type; only if you need to control
@@ -144,6 +147,15 @@ impl SharedSecret {
     pub unsafe fn blank() -> SharedSecret { mem::MaybeUninit::uninit().assume_init() }
 }
 
+/// Data structure to represent a Fischlin NIZK proof
+#[cfg(feature = "ecdsa-adaptor")]
+#[derive(Debug, Eq, PartialEq)]
+#[repr(C)] pub struct FischlinProof(c_int);
+
+/// Data structure to represent an ECDSA pre-signature
+#[cfg(feature = "ecdsa-adaptor")]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(C)] pub struct EcdsaPreSignature(c_int);
 
 extern "C" {
     pub static secp256k1_nonce_function_rfc6979: NonceFn;
@@ -172,6 +184,74 @@ extern "C" {
                                         gen: *mut Generator,
                                         seed32: *const c_uchar)
                                         -> c_int;
+
+    // Fischlin proof
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_fischlin_proof_create() -> *mut FischlinProof;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_fischlin_proof_init(proof: *mut FischlinProof) -> c_int;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_fischlin_proof_destroy(proof: *mut FischlinProof) -> c_int;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_fischlin_prove(cx: *const Context,
+                                    proof: *mut FischlinProof,
+                                    seckey: *const c_uchar,
+                                    vs: *const [c_uchar; 32])
+                                    -> c_int;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_fischlin_verify(cx: *const Context,
+                                     ret: *mut c_int,
+                                     pubkey: *const PublicKey,
+                                     proof: *const FischlinProof)
+                                     -> c_int;
+
+    // ECDSA adaptor signature
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_ecdsa_pre_signature_create() -> *mut EcdsaPreSignature;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_ecdsa_pre_signature_destroy(pre_sig: *mut EcdsaPreSignature);
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_ecdsa_pre_sign(cx: *const Context,
+                                    pre_sig: *mut EcdsaPreSignature,
+                                    msg: *const c_uchar,
+                                    msg_len: size_t,
+                                    ypk: *const PublicKey,
+                                    y_proof: *const FischlinProof,
+                                    xsk: *const c_uchar,
+                                    ksk: *const c_uchar,
+                                    rand: *const c_uchar)
+                                    -> c_int;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_ecdsa_pre_verify(cx: *const Context,
+                                      ret: *mut c_int,
+                                      msg: *const c_uchar,
+                                      msg_len: size_t,
+                                      ypk: *const PublicKey,
+                                      y_proof: *const FischlinProof,
+                                      xpk: *const PublicKey,
+                                      pre_sig: *const EcdsaPreSignature)
+                                      -> c_int;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_ecdsa_adapt(sig: *mut Signature,
+                                 pre_sig: *const EcdsaPreSignature,
+                                 ysk: *const c_uchar)
+                                 -> c_int;
+
+    #[cfg(feature = "ecdsa-adaptor")]
+    pub fn secp256k1_ecdsa_extract(cx: *const Context,
+                                   ysk: *mut c_uchar,
+                                   sig: *const Signature,
+                                   pre_sig: *const EcdsaPreSignature,
+                                   y_proof: *const FischlinProof)
+                                   -> c_int;
 
     // TODO secp256k1_context_set_illegal_callback
     // TODO secp256k1_context_set_error_callback

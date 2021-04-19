@@ -61,6 +61,8 @@ pub mod ffi;
 pub mod key;
 pub mod pedersen;
 pub mod aggsig;
+#[cfg(feature = "ecdsa-adaptor")]
+pub mod ecdsa_adaptor;
 
 pub use key::SecretKey;
 pub use key::PublicKey;
@@ -477,6 +479,8 @@ pub enum Error {
     InvalidRangeProof,
     /// Error creating partial signature
     PartialSigFailure,
+    #[cfg(feature = "ecdsa-adaptor")]
+    InvalidFischlinProof,
 }
 
 impl Error {
@@ -493,6 +497,8 @@ impl Error {
             Error::IncorrectCommitSum => "secp: invalid pedersen commitment sum",
             Error::InvalidRangeProof => "secp: invalid range proof",
             Error::PartialSigFailure => "secp: partial sig (aggsig) failure",
+            #[cfg(feature = "ecdsa-adaptor")]
+            Error::InvalidFischlinProof => "secp: invalid Fischlin proof",
         }
     }
 }

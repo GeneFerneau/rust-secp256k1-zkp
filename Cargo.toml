@@ -26,6 +26,7 @@ unstable = []
 default = []
 bullet-proof-sizing = []
 dev = ["clippy"]
+ecdsa-adaptor = []
 
 [dependencies]
 arrayvec = "0.3"

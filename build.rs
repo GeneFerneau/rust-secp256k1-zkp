@@ -42,7 +42,9 @@ fn main() {
                .define("ENABLE_MODULE_RANGEPROOF", Some("1"))
                .define("ENABLE_MODULE_BULLETPROOF", Some("1"))
                .define("ENABLE_MODULE_AGGSIG", Some("1"))
-               .define("ENABLE_MODULE_SCHNORRSIG", Some("1"));
+               .define("ENABLE_MODULE_SCHNORRSIG", Some("1"))
+               .define("ENABLE_EXPERIMENTAL", Some("1"))
+               .define("ENABLE_MODULE_ECDSA_ADAPTOR", Some("1"));
 
     // secp256k1-zkp
     base_config.file("depend/secp256k1-zkp/contrib/lax_der_parsing.c")
