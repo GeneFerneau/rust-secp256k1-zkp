@@ -32,6 +32,7 @@ use crate::aggsig::ZERO_256;
 use crate::constants;
 use crate::ffi;
 use crate::key::{self, PublicKey, SecretKey};
+use crate::serialize::hex::FromHex;
 use rand::{thread_rng, Rng};
 use serde::{de, ser};
 
@@ -89,6 +90,11 @@ impl Commitment {
 		}
 		Commitment(h)
 	}
+
+    /// Deserialize a Commitment from hex bytes
+    pub fn from_hex(h: &str) -> Result<Commitment, Error> {
+        Ok(Self::from_vec(h.from_hex().map_err(|_| Error::InvalidCommit)?))
+    }
 
 	/// Uninitialized commitment, use with caution
 	unsafe fn blank() -> Commitment {
