@@ -1,5 +1,6 @@
 mod ecdsa_adaptor;
 mod generator;
+mod musig;
 #[cfg(feature = "std")]
 mod pedersen;
 #[cfg(feature = "std")]

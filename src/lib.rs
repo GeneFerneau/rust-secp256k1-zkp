@@ -108,6 +108,8 @@ pub enum Error {
     CannotRecoverAdaptorSecret,
     /// Given adaptor signature is not valid for the provided combination of public key, encryption key and message
     CannotVerifyAdaptorSignature,
+    /// Failed to initialize MuSig session
+    InvalidMusigSession,
 }
 
 // Passthrough Debug to Display, since errors should be user-visible
@@ -127,6 +129,7 @@ impl fmt::Display for Error {
             Error::Upstream(inner) => return write!(f, "{}", inner),
             Error::InvalidTweakLength => "Tweak must of size 32",
             Error::TweakOutOfBounds => "Tweak must be less than secp curve order",
+            Error::InvalidMusigSession => "failed to initialize MuSig session",
         };
 
         f.write_str(str)
